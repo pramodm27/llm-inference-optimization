@@ -1,0 +1,51 @@
+# Serving configurations for the inference benchmark.
+# Each profile is launched by serving/launch_vllm.py and benchmarked by benchmarks/run_benchmark.py.
+
+model:
+  name: meta-llama/Llama-3.1-8B-Instruct
+  # Quantized checkpoints used for the INT4 profile.
+  awq_name: hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4
+
+hardware:
+  gpu: H100-80GB
+  gpu_memory_utilization: 0.90
+
+profiles:
+  fp16_baseline:
+    quantization: null
+    dtype: float16
+    max_num_seqs: 64
+    enable_prefix_caching: false
+    enable_chunked_prefill: false
+
+  fp16_tuned:
+    quantization: null
+    dtype: float16
+    max_num_seqs: 64
+    enable_prefix_caching: true
+    enable_chunked_prefill: true
+    max_num_batched_tokens: 8192
+
+  fp8:
+    quantization: fp8
+    dtype: auto
+    max_num_seqs: 64
+    enable_prefix_caching: true
+    enable_chunked_prefill: true
+    max_num_batched_tokens: 8192
+
+  awq_int4:
+    quantization: awq
+    dtype: float16
+    max_num_seqs: 64
+    enable_prefix_caching: true
+    enable_chunked_prefill: true
+    max_num_batched_tokens: 8192
+
+benchmark:
+  input_lengths: [512, 2048]
+  output_length: 128
+  concurrency_levels: [1, 8, 32, 64]
+  requests_per_level: 200
+  warmup_requests: 20
+  shared_prefix_tokens: 1500   # used by the prefix-caching workload
